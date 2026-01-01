@@ -285,6 +285,7 @@ set(DEVICE_LIB_HEADERS
   ${ANALYZERDIR}/device/spec.h)
 
 set(ANALYZER_LIB_HEADERS
+  ${ANALYZERDIR}/fhss.h
   ${ANALYZERDIR}/corrector.h
   ${ANALYZERDIR}/realtime.h
   ${ANALYZERDIR}/msg.h
@@ -379,6 +380,7 @@ set(ANALYZER_LIB_SOURCES
   ${ANALYZERDIR}/bufpool.c
   ${ANALYZERDIR}/client.c
   ${ANALYZERDIR}/estimator.c
+  ${ANALYZERDIR}/fhss.c
   ${ANALYZERDIR}/mq.c
   ${ANALYZERDIR}/msg.c
   ${ANALYZERDIR}/pool.c
@@ -763,4 +765,3 @@ endif()
 if(UNIX AND NOT APPLE)
   install(CODE "exec_program(ldconfig)")
 endif()
-
