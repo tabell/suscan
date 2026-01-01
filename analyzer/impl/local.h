@@ -25,6 +25,7 @@
 #include <analyzer/inspector/factory.h>
 #include <analyzer/inspector/overridable.h>
 #include <analyzer/pool.h>
+#include <analyzer/fhss.h>
 
 #include <rbtree.h>
 
@@ -121,6 +122,7 @@ struct suscan_local_analyzer {
   suscan_worker_t *slow_wk; /* Worker for slow operations */
   SUCOMPLEX *read_buf;
   SUSCOUNT   read_size;
+  suscan_fhss_tracker_t *fhss;
 
   rbtree_t *bbfilt_tree;
 
