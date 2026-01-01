@@ -282,6 +282,28 @@ suscan_analyzer_thread(void *data)
           replay = (const struct suscan_analyzer_replay_msg *) private;
           SU_TRY(suscan_local_analyzer_slow_set_replay(self, replay->replay));
           break;
+
+        case SUSCAN_ANALYZER_MESSAGE_TYPE_PSD: {
+          const struct suscan_analyzer_psd_msg *psd_msg =
+              (const struct suscan_analyzer_psd_msg *) private;
+
+          if (self->fhss != NULL) {
+            (void) suscan_fhss_feed_psd(
+                self->fhss,
+                &psd_msg->timestamp,
+                psd_msg->fc,
+                psd_msg->samp_rate,
+                psd_msg->psd_data,
+                psd_msg->psd_size);
+          }
+
+          SU_TRY(suscan_mq_write(self->parent->mq_out, type, private));
+
+          /* Not belonging to us anymore */
+          private = NULL;
+
+          break;
+        }
         
         /* Forward these messages to output */
         case SUSCAN_ANALYZER_MESSAGE_TYPE_EOS:
@@ -448,6 +470,8 @@ suscan_local_analyzer_ctor(suscan_analyzer_t *parent, va_list ap)
   SU_MAKE_FAIL(new->source, suscan_source, config);
   source_info = suscan_source_get_info(new->source);
   new->source_info = *source_info;
+
+  SU_TRYCATCH(new->fhss = suscan_fhss_new(), goto fail);
 
   /* Periodic updates */
   new->interval_channels = parent->params.channel_update_int;
@@ -655,6 +679,9 @@ suscan_local_analyzer_dtor(void *ptr)
   /* Free channel detector */
   if (self->detector != NULL)
     su_channel_detector_destroy(self->detector);
+
+  if (self->fhss != NULL)
+    suscan_fhss_destroy(self->fhss);
 
   if (self->psd_worker != NULL) {
     if (!suscan_analyzer_halt_worker(self->psd_worker)) {
